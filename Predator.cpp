@@ -27,13 +27,13 @@ void Predator::setHunger(int hunger)
 	this->hunger = hunger;
 }
 
-void Predator::InstinctMove(Field& userMap, Victim& vVictim, vector<bool>& poz)
+void Predator::InstinctMove(Field& userMap, Victim& vVictim, const vector<bool>& poz)
 {
 	double minDistance = LONG_MAX;
 	unsigned xA = this->GetX();
 	unsigned yA = this->GetY();
 	vector <double> dist(8);
-	int moveNumer = 0;
+	int moveNumer = INT_MAX;
 	//определяем дистанции до жертвы из соседних свободных клеток
 	for (int i = 0; i < 8; i++)
 	{
@@ -69,40 +69,44 @@ void Predator::InstinctMove(Field& userMap, Victim& vVictim, vector<bool>& poz)
 			moveNumer = i;
 		}
 	}
+	//если не куда идти - стоять
+	if (moveNumer<0 || moveNumer > 8)
+		return;
+
 	//перемещение на нужную клетку
 	switch (moveNumer)
 	{
 	case 0:
-		SetX(GetX() - 1);
-		SetY(GetY() - 1);
+		this->SetX(xA - 1);
+		this->SetY(yA - 1);
 		return;
 	case 1:
-		SetX(GetX());
-		SetY(GetY() - 1);
+		this->SetX(xA);
+		this->SetY(yA - 1);
 		return;
 	case 2:
-		SetX(GetX() + 1);
-		SetY(GetY() - 1);
+		this->SetX(xA + 1);
+		this->SetY(yA - 1);
 		return;
 	case 3:
-		SetX(GetX() + 1);
-		SetY(GetY());
+		this->SetX(xA + 1);
+		this->SetY(yA);
 		return;
 	case 4:
-		SetX(GetX() + 1);
-		SetY(GetY() + 1);
+		this->SetX(xA + 1);
+		this->SetY(yA + 1);
 		return;
 	case 5:
-		SetX(GetX());
-		SetY(GetY() + 1);
+		this->SetX(xA);
+		this->SetY(yA + 1);
 		return;
 	case 6:
-		SetX(GetX() - 1);
-		SetY(GetY() + 1);
+		this->SetX(xA - 1);
+		this->SetY(yA + 1);
 		return;
 	case 7:
-		SetX(GetX() - 1);
-		SetY(GetY());
+		this->SetX(xA - 1);
+		this->SetY(yA);
 		return;
 	}
 };

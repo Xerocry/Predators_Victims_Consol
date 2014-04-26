@@ -25,7 +25,7 @@ public:
 	unsigned int getEatCount();
 	void setEatCount(int);
 
-	void InstinctMove(Field& , Victim& , vector<bool>& poz);
+	void InstinctMove(Field& , Victim& , const vector<bool>& poz);
 
 	Predator(unsigned int newX, unsigned int newY, unsigned int eatCount, unsigned int hunger);
 	

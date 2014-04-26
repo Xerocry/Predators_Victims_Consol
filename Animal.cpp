@@ -14,30 +14,33 @@ unsigned int Animal::GetY()const
 	return y;
 };
 
-void Animal::SetX(int newX)
+void Animal::SetX(unsigned int newX)
 {
 	x = newX;
 	return;
 };
-void Animal::SetY(int newY)
+void Animal::SetY(unsigned int newY)
 {
 	y = newY;
 	return;
 };
 
 /*проверим клетки вокруг, находим свободную рандомно, перемещаемся на неё*/
-void Animal::move(Field& userMap, vector<bool>& poz)
+void Animal::move(Field& userMap, const vector<bool>& poz)
 {
 	int count = 0;
-	unsigned int newX, newY;
-	userMap.FindFreeCell(newX, newY, *this, poz);
-
-	for (int i = 0; i < 8; i++)
-	if (poz[i] == false)
-		count++;
-	if (count == 8)
+	unsigned int newX = GetX(), newY = GetY();
+	if (userMap.FindFreeCell(newX, newY, *this, poz) == false)
+	{
+		newX = GetX();
+		newY = GetY();
 		return;
-
-	this->x = newX;
-	this->y = newY;
+	}
+		
+	else
+	{
+		SetX(newX);
+		SetY(newY);
+		return;
+	}
 };

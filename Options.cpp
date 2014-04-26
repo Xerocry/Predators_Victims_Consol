@@ -66,7 +66,7 @@ void options(Field& userMap)
 			cout << userMap;
 			cout << "Enter /'quit/' to save and quit to menu" << endl << endl;
 		}
-		if (option == "inctinct")
+		if (option == "instinct")
 		{
 			userMap.userInstinct = stoi(data)*sqrt(double(2));
 			system("cls");

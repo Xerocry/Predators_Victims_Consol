@@ -27,11 +27,11 @@ public:
 	unsigned int GetY()const;
 
 	//установить координаты
-	void SetX(int );
-	void SetY(int );
+	void SetX(unsigned int );
+	void SetY(unsigned int );
 
 	//движение
-	void move(Field& , vector<bool>& poz);
+	void move(Field& , const vector<bool>& poz);
 	
 };
 #endif

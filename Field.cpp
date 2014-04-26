@@ -8,7 +8,7 @@
 #include <Windows.h>
 #include <conio.h>
 
-void start(Field& userMap, bool newGame);
+void start(Field& userMap);
 void main();
 
 using namespace std;
@@ -25,17 +25,17 @@ void Field::setFirstAnimals()
 {
 	//First Victim on random cell
 	srand(time(NULL) | clock());
-	unsigned int xVS = rand() % this->userWidth + 1;
-	unsigned int yVS = rand() % this->userHeight + 1;
+	unsigned int xVS = rand() % this->userWidth;
+	unsigned int yVS = rand() % this->userHeight;
 	this->vVictims.push_back(Victim(xVS, yVS));
 
 	//First Predator on random cell
-	unsigned int xPS = rand() % this->userWidth + 1;
-	unsigned int yPS = rand() % this->userHeight + 1;
+	unsigned int xPS = rand() % this->userWidth;
+	unsigned int yPS = rand() % this->userHeight;
 	while ((xVS == xPS) && (yVS == yPS))
 	{
-		xPS = rand() % this->userWidth + 1;
-		yPS = rand() % this->userHeight + 1;
+		xPS = rand() % this->userWidth;
+		yPS = rand() % this->userHeight;
 	}
 	this->vPredators.push_back(Predator(xPS, yPS));
 
@@ -45,8 +45,8 @@ Field::Field()
 {
 	srand(time(NULL) | clock());
 
-	userInstinct = 2*sqrt(double(2));
-	userHunger = 8;
+	userInstinct = 4*sqrt(double(2));
+	userHunger = 40;
 	userBirthCount = 2;
 	userEatCount = 3;
 	userWidth = 25;
@@ -71,7 +71,7 @@ void Field::empty()
 
 }
 
-void Field::FindFreeCell(unsigned int &newX, unsigned int &newY, Animal& vAnimal, vector <bool>& poz)
+bool Field::FindFreeCell(unsigned int &newX, unsigned int &newY, const Animal& vAnimal, const vector<bool>& poz)
 {
 	unsigned int xA = vAnimal.GetX();
 	unsigned int yA = vAnimal.GetY();
@@ -90,13 +90,14 @@ void Field::FindFreeCell(unsigned int &newX, unsigned int &newY, Animal& vAnimal
 	//нет свободных клеток
     if ( sumPoz == 8 )
     {
-        return;
+        return false;
     }
 
+	srand(time(NULL) | clock()); // рандомизация генератора случайных чисел
     int randPoz = rand() % 8 ; 
 	int allPoz = 0;
 
-	while (allPoz < 8)
+	while (allPoz < 8)	//если все позиции заняты
 	{
 		if (poz[randPoz] == true)
 		{
@@ -106,52 +107,50 @@ void Field::FindFreeCell(unsigned int &newX, unsigned int &newY, Animal& vAnimal
 			{
 					  newX = xA - 1;
 					  newY = yA - 1;
-					  return;
+					  return true;
 			}
 			case 1:
 			{
 					  newX = xA;
 					  newY = yA - 1;
-					  return;
+					  return true;
 			}
 			case 2:
 			{
 					  newX = xA + 1;
 					  newY = yA - 1;
-					  return;
+					  return true;
 			}
 			case 3:
 			{
 					  newX = xA + 1;
 					  newY = yA;
-					  return;
+					  return true;
 			}
 			case 4:
 			{
 					  newX = xA + 1;
 					  newY = yA + 1;
-					  return;
+					  return true;
 			}
 			case 5:
 			{
 					  newX = xA;
 					  newY = yA + 1;
-					  return;
+					  return true;
 			}
 			case 6:
 			{
 					  newX = xA - 1;
 					  newY = yA + 1;
-					  return;
+					  return true;
 			}
 			case 7:
 			{
 					  newX = xA - 1;
 					  newY = yA;
-					  return;
+					  return true;
 			}
-			default:
-				break;
 			}
 		}
 		else //если рандомная позиция занята - перейти к другой
@@ -164,20 +163,24 @@ void Field::FindFreeCell(unsigned int &newX, unsigned int &newY, Animal& vAnimal
 			}
 		}
 	}
-	return;
+	return false;
 }
 
-void Field::Breed(Animal& animal, vector<bool>& poz, bool flag)
+void Field::Breed(const Animal& animal, const vector<bool>& poz, bool flag)
 {
 	unsigned int newX;
 	unsigned int newY;
 	int count = 0;
 
-	FindFreeCell(newX, newY, animal, poz);
+	if (FindFreeCell(newX, newY, animal, poz) == false)
+		return;
 
 	for (int i = 0; i < 8; i++)
+	{
 		if (poz[i] == false)
 			count++;
+	}
+
 	if (count == 8)
 		return;
 
@@ -187,7 +190,7 @@ void Field::Breed(Animal& animal, vector<bool>& poz, bool flag)
 		vVictims.push_back(typeAnimal);
 		return;
 	}
-	else
+	else if (flag == false)
 	{
 		Predator typeAnimal(newX, newY, 0, 0);
 		vPredators.push_back(typeAnimal);
@@ -197,117 +200,76 @@ void Field::Breed(Animal& animal, vector<bool>& poz, bool flag)
 
 void Field::CheckCoord(const Animal& vAnimal, vector<bool>& poz)
 {
-	unsigned int xA = vAnimal.GetX();
-	unsigned int yA = vAnimal.GetY();
+	int xA = vAnimal.GetX();
+	int yA = vAnimal.GetY();
 	// массив позиций
 	for (int i = 0; i < 8; i++)
 	{
 		poz[i] = true;    // все позиции свободны
 	}
 	// проверка на границы поля
-	if ((xA - 1) < 1)
+	if ((xA - 1) < 0)
 	{
 		poz[0] = poz[7] = poz[6] = false;
 	}
-	if ((yA - 1) < 1)
+	if ((yA - 1) < 0)
 	{
 		poz[0] = poz[1] = poz[2] = false;
 	}
-	if ((xA + 1) >= this->userWidth+1)
+	if ((xA + 1) >= this->userWidth)
 	{
 		poz[2] = poz[3] = poz[4] = false;
 	}
-	if ((yA + 1) >= this->userHeight+1)
+	if ((yA + 1) >= this->userHeight)
 	{
 		poz[6] = poz[5] = poz[4] = false;
 	}
-	// проверка вестора жертв
-	for (unsigned int i = 0; i < this->vVictims.size(); i++)
-	{
-		int xV = this->vVictims[i].GetX();
-		int yV = this->vVictims[i].GetY();
 
-		if (((xA - 1) == xV) && ((yA - 1) == yV))
-		{
-			poz[0] = false;
-		}
-		if ((xA == xV) && ((yA - 1) == yV))
-		{
-			poz[1] = false;
-		}
-		if (((xA + 1) == xV) && ((yA - 1) == yV))
-		{
-			poz[2] = false;
-		}
-		if (((xA + 1) == xV) && (yA == yV))
-		{
-			poz[3] = false;
-		}
-		if (((xA + 1) == xV) && ((yA + 1) == yV))
-		{
-			poz[4] = false;
-		}
-		if ((xA == xV) && ((yA + 1) == yV))
-		{
-			poz[5] = false;
-		}
-		if (((xA - 1) == xV) && ((yA + 1) == yV))
-		{
-			poz[6] = false;
-		}
-		if (((xA - 1) == xV) && (yA == yV))
-		{
-			poz[7] = false;
-		}
-	}
-	// проверка вектора хищников
-	for (unsigned int i = 0; i < this->vPredators.size(); i++)
-	{
-		int xP = this->vPredators[i].GetX();
-		int yP = this->vPredators[i].GetY();
+	if (getVictim(xA - 1, yA - 1) || getPredator(xA - 1, yA - 1))
+		poz[0] = false;
+	if (getVictim(xA, yA - 1) || getPredator(xA, yA - 1))
+		poz[1] = false;
+	if (getVictim(xA + 1, yA - 1) || getPredator(xA + 1, yA - 1))
+		poz[2] = false;
+	if (getVictim(xA + 1, yA ) || getPredator(xA + 1, yA))
+		poz[3] = false;
+	if (getVictim(xA + 1, yA + 1) || getPredator(xA + 1, yA + 1))
+		poz[4] = false;
+	if (getVictim(xA, yA + 1) || getPredator(xA, yA + 1))
+		poz[5] = false;
+	if (getVictim(xA - 1, yA + 1) || getPredator(xA - 1, yA + 1))
+		poz[6] = false;
+	if (getVictim(xA - 1, yA) || getPredator(xA - 1, yA))
+		poz[7] = false;
 
-		if (((xA - 1) == xP) && ((yA - 1) == yP))
-		{
-			poz[0] = false;
-		}
-		if ((xA == xP) && ((yA - 1) == yP))
-		{
-			poz[1] = false;
-		}
-		if (((xA + 1) == xP) && ((yA - 1) == yP))
-		{
-			poz[2] = false;
-		}
-		if (((xA + 1) == xP) && (yA == yP))
-		{
-			poz[3] = false;
-		}
-		if (((xA + 1) == xP) && ((yA + 1) == yP))
-		{
-			poz[4] = false;
-		}
-		if ((xA == xP) && ((yA + 1) == yP))
-		{
-			poz[5] = false;
-		}
-		if (((xA - 1) == xP) && ((yA + 1) == yP))
-		{
-			poz[6] = false;
-		}
-		if (((xA - 1) == xP) && (yA == yP))
-		{
-			poz[7] = false;
-		}
-	}
 	return;
 };
 
-double Field::CheckDistance(unsigned xP, unsigned yP, Animal& vVictim)
+double Field::CheckDistance(const unsigned& xP, const unsigned& yP, const Animal& vVictim)
 {
-	double distance = sqrt(double((vVictim.GetX() - xP)*(vVictim.GetX() - xP)
+	double distance;
+	distance = sqrt(double((vVictim.GetX() - xP)*(vVictim.GetX() - xP)
 		+ (vVictim.GetY() - yP)*(vVictim.GetY() - yP)));
 	return distance;
 };
+
+double Field::CheckDistance(const Animal& vPredator, const Animal& vVictim)
+{
+	double distance = sqrt(double((vVictim.GetX() - vPredator.GetX())*(vVictim.GetX() - vPredator.GetX())
+		+ (vVictim.GetY() - vPredator.GetY())*(vVictim.GetY() - vPredator.GetY())));
+	return distance;
+};
+
+int Field::checkGame()
+{
+	if (this->vPredators.empty() == true && this->vVictims.empty() == false)
+		return 0;
+	if (this->vPredators.empty() == false && this->vVictims.empty() == true)
+		return 1;
+	if (this->vPredators.empty() && this->vVictims.empty())
+		return 2;
+	return 3;
+}
 
 void Field::SaveMap()
 {
@@ -432,18 +394,11 @@ void Field::LoadMap()
 			fin >> buf;
 	}
 	fin.close();
-	start(*this, false);
+	start(*this);
 };
 
 void Field::move()
 {
-	//Game's end
-	if (this->vVictims.size() == 0)
-	{
-		cout << "All Victims were died! Predators win!";
-		cin.get();
-		main();
-	}
 
 	/*
 	* Victims' turns;
@@ -452,6 +407,8 @@ void Field::move()
 	*/
 
 	bool turnEnd = false;
+	bool eatFlag = false;
+
 	for (unsigned int i = 0; i < this->vVictims.size(); i++)
 	{
 		vector<bool> poz(8);
@@ -461,10 +418,10 @@ void Field::move()
 		{
 			this->Breed(this->vVictims[i], poz, true);
 			this->vVictims[i].setBirthCount(0);
-			turnEnd = true;
+			break;
 		}
 		//Ordinary move
-		else if (turnEnd == false)
+		else
 		{
 			this->vVictims[i].setBirthCount(this->vVictims[i].getBirthCount() + 1);
 			this->vVictims[i].move(*this, poz);
@@ -483,43 +440,33 @@ void Field::move()
 
 	for (unsigned int i = 0; i < this->vPredators.size(); i++)
 	{
-		bool turnEnd = false;
-		bool eatFlag = false;
-		vector <bool> poz(8);
+		vector<bool> poz(8);
+		turnEnd = false;
 		CheckCoord(vPredators[i], poz);
+
 		//Check for hunger and death
 		if (this->vPredators[i].getHunger() == this->userHunger)
 		{
 			swap(this->vPredators[i], this->vPredators.back());
 			this->vPredators.pop_back();
-			turnEnd = true;
-		}
-
-		//End of game
-		if (this->vPredators.size() == 0)
-		{
-			cout << "All Predators were died! Victims win!";
-			cin.get();
-			main();
+			break;
 		}
 
 		//Check for victims and eating
-		if (turnEnd == false)
+		for (unsigned int j = 0; j < this->vVictims.size(); j++)
 		{
-			for (unsigned int j = 0; j < this->vVictims.size(); j++)
+			if (this->CheckDistance(this->vPredators[i].GetX(), this->vPredators[i].GetY(),
+				this->vVictims[j]) == sqrt(double(2)))
 			{
-				if (this->CheckDistance(this->vPredators[i].GetX(), this->vPredators[i].GetY(),
-					this->vVictims[j]) == sqrt(double(2)))
-				{
-					swap(this->vVictims[j], this->vVictims.back());
-					this->vVictims.pop_back();
-					this->vPredators[i].setHunger(0);
-					this->vPredators[i].setEatCount(this->vPredators[i].getEatCount() + 1);
-					eatFlag = true;
-					break;
-				}
+				swap(this->vVictims[j], this->vVictims.back());
+				this->vVictims.pop_back();
+				this->vPredators[i].setHunger(0);
+				this->vPredators[i].setEatCount(this->vPredators[i].getEatCount() + 1);
+				eatFlag = true;
+				break;
 			}
 		}
+
 
 		//Check for sense raduis and moving forward to nearest victim, eating
 		if (turnEnd == false && eatFlag == false)
@@ -540,15 +487,15 @@ void Field::move()
 						this->vPredators[i].setEatCount(this->vPredators[i].getEatCount() + 1);
 						eatFlag = true;
 					}
+					turnEnd = true;
 					break;
 				}
 			}
 		}
 
 		//Check for breed count and breed
-		if (this->vPredators[i].getEatCount() == this->userEatCount)
+		if (this->vPredators[i].getEatCount() == this->userEatCount && turnEnd == false)
 		{
-			//this->CheckCoord(this->vPredators[i], poz);
 			this->Breed(this->vPredators[i], poz, false);
 			this->vPredators[i].setEatCount(0);
 			turnEnd = true;

@@ -14,31 +14,24 @@ void PrintMap(Field& userMap);
 
 using namespace std;
 
-void start(Field& userMap, bool newGame)
+void start(Field& userMap)
 {
-	//char command[256];
 	string command;
 
 	//If it's not a loaded map
-	if (newGame == true)
+	if (userMap.checkGame() == 2)
 	{
 		userMap.setFirstAnimals();
 		system("cls");
 		PrintMap(userMap);
 		cout << "Start game";
-		cin.get();
-	}		
+	}
 
-	system("cls");
-	PrintMap(userMap);
-
-	//Game on
 	while (true)
 	{
 	
-		cin >> command;
+		//cin >> command;
 
-		//You can save multiply times
 		while (command == "save")
 		{
 		if (command == "save")
@@ -50,26 +43,38 @@ void start(Field& userMap, bool newGame)
 		if (command == "menu")
 			main();
 
-	
 		userMap.move();
+
 		system("cls");
 		PrintMap(userMap);
-		Sleep(200);
 
-		command = "";
+		switch (userMap.checkGame())
+		{
+		case 0:
+			cout << "All Victims were died! Predators win!";
+			cin.get();
+			main();
+		case 1:
+			cout << "All Predators were died! Victims win!";
+			cin.get();
+			main();
+		}
+		Sleep(100);
+
+		command.clear();
 	}
 };
 
 //печать карты
 void PrintMap(Field& userMap)
 {
-	for (unsigned int i = 1; i <= userMap.userWidth; i++)
+	for (unsigned int i = 0; i < userMap.userHeight; i++)
 	{
-		for (unsigned int j = 1; j <= userMap.userHeight; j++)
+		for (unsigned int j = 0; j < userMap.userWidth; j++)
 		{
-			if (userMap.getVictim(i, j) == true)
+			if (userMap.getVictim(j, i) == true)
 				cout << 'v';
-			else if (userMap.getPredator(i, j) == true)
+			else if (userMap.getPredator(j, i) == true)
 				cout << 'p';
 			else
 				cout << '.';

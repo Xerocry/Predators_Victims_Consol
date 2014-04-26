@@ -3,7 +3,7 @@
 #include <iostream>
 #include "Field.h"
 
-void start(Field& userMap, bool newGame);
+void start(Field& userMap);
 void options(Field& userMap);
 
 using namespace std;
@@ -29,7 +29,7 @@ void main()
 		case 1:
 			system("cls");
 			userMap.empty();
-			start(userMap, true);
+			start(userMap);
 			command = 0;
 			break;
 		case 2:

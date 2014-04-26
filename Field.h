@@ -42,16 +42,19 @@ public:
 	void CheckCoord(const Animal&, vector<bool>& );
 
 	//выдаЄт координаты рандомной свободной клетки
-	void FindFreeCell(unsigned int &, unsigned int &, Animal& , vector <bool>& poz);
+	bool FindFreeCell(unsigned int&, unsigned int&, const Animal&, const vector<bool>& poz);
 
 	//ѕроверка на жертв р€дом
-	bool CheckForVictims(Predator& vPredator);
+	bool CheckForVictims(const Predator& vPredator);
 
 	//проверка рассто€ни€ между животными
-	double CheckDistance(unsigned, unsigned, Animal&);
+	double CheckDistance(const unsigned& , const unsigned& , const Animal&);
+	double CheckDistance(const Animal& , const Animal&);
+
+	int checkGame(); 
 
 	//размножение
-	void Breed(Animal& , vector<bool>& poz, bool );
+	void Breed(const Animal& , const vector<bool>& poz, bool );
 
 	void SaveMap();
 
